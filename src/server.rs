@@ -15,10 +15,13 @@ use tokio::sync::broadcast::Sender;
 pub async fn start(
     shutdown_tx: Sender<()>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let port = init_config().await.read().await.port();
-    let listener = TcpListener::bind(format!("127.0.0.1:{port}")).await?;
+    let (port, host) = {
+        let config = init_config().await.read_owned().await;
+        (config.port(), config.host())
+    };
+    let listener = TcpListener::bind(format!("{host}:{port}")).await?;
 
-    println!("Listening on http://127.0.0.1:{port}");
+    println!("Listening on http://{host}:{port}");
 
     let mut shutdown_rx = shutdown_tx.subscribe();
 

@@ -39,6 +39,7 @@ Edit file `/etc/swhook.conf`:
 ```toml
 [server]
 port = 3225
+host = "127.0.0.1"
 
 [hooks]
 hello_world = "/path/to/your/home/directory/swhook-test/hello_world"

@@ -8,12 +8,17 @@ pub static CONFIG: OnceCell<Arc<RwLock<Config>>> = OnceCell::const_new();
 
 pub struct Config {
     port: u16,
+    host: String,
     methods: HashMap<String, Method>,
 }
 
 impl Config {
     pub fn port(&self) -> u16 {
         self.port
+    }
+
+    pub fn host(&self) -> String {
+        self.host.clone()
     }
 
     #[allow(dead_code)]
@@ -29,7 +34,8 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            port: 3225,
+            port: 32255,
+            host: "127.0.0.1".into(),
             methods: HashMap::default(),
         }
     }
@@ -37,9 +43,7 @@ impl Default for Config {
 
 pub async fn init_config() -> Arc<RwLock<Config>> {
     CONFIG
-        .get_or_init(|| async {
-            Arc::new(RwLock::new(get_config().await))
-        })
+        .get_or_init(|| async { Arc::new(RwLock::new(get_config().await)) })
         .await
         .clone()
 }
@@ -61,9 +65,15 @@ async fn get_config() -> Config {
             match toml {
                 Ok(table) => {
                     let port: u16 = if let Some(t) = table["server"].as_table() {
-                        t["port"].as_integer().unwrap_or(3225) as u16
+                        t["port"].as_integer().unwrap_or(32255) as u16
                     } else {
-                        3225
+                        32255
+                    };
+
+                    let host: String = if let Some(t) = table["server"].as_table() {
+                        t["host"].as_str().unwrap_or("127.0.0.1").into()
+                    } else {
+                        "127.0.0.1".into()
                     };
 
                     let methods: HashMap<String, Method> =
@@ -78,7 +88,11 @@ async fn get_config() -> Config {
                             HashMap::default()
                         };
 
-                    return Config { port, methods };
+                    return Config {
+                        port,
+                        host,
+                        methods,
+                    };
                 }
                 Err(err) => {
                     eprintln!("Failed to load config (toml error) [/etc/swhook.conf]: {err}")
