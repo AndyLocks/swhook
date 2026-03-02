@@ -1,0 +1,12 @@
+[Unit]
+Description=Web Hook Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStartPre=/usr/bin/bash -c 'until ping -c1 8.8.8.8 >/dev/null 2>&1; do sleep 2; done'
+ExecStart=/usr/bin/swhook server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
