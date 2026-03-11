@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  swhook:
+    container_name: swhook
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 32255:32255
+    volumes:
+      - ./etc/swhook.conf:/etc/swhook.conf
+      - ./etc/hello_world:/usr/share/swhook/methods/hello_world
